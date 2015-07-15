@@ -35,7 +35,7 @@
     var xscale = d3.scale.linear().domain([0, 100]).range([width / 4, width / 4 * 3]);
     var yscale = d3.scale.linear().domain([0, 100]).range([height / 4, height / 4 * 3]);
 
-    const LAYER_5 = 0, LAYER_4 = 25, LAYER_3 = 50, LAYER_2 = 75, LAYER_1 = 0;
+    const LAYER_5 = 0, LAYER_4 = 25, LAYER_3 = 50, LAYER_2 = 75, LAYER_1 = 100;
 
     var vis = d3.select("#topology")
       .append("svg:svg")
@@ -51,57 +51,38 @@
         .attr("class", "rule");
     }
 
-    var nodes = [
-      {
-        x: xscale(40),
-        y: yscale(LAYER_5),
-        label: "node 1",
-        fixed: true
-      }, {
-        x: xscale(60),
-        y: yscale(LAYER_5),
-        label: "node 2",
-        fixed: true
-      }, {
-        x: xscale(40),
-        y: yscale(LAYER_4),
-        label: "node 3",
-        fixed: true
-      }, {
-        x: xscale(60),
-        y: yscale(LAYER_4),
-        label: "node 4",
-        fixed: true
-      }, {
-        x: xscale(20),
-        y: yscale(LAYER_3),
-        label: "node 5",
-        fixed: true
-      }, {
-        x: xscale(50),
-        y: yscale(LAYER_3),
-        label: "node 6",
-        fixed: true
-      }, {
-        x: xscale(80),
-        y: yscale(LAYER_3),
-        label: "node 7",
-        fixed: true
-      }];
+    function make_nodes(nodes_cnt, layer) {
+      nodes_cnt--;
+      nodes = [];
+      for (i = 0; i <= nodes_cnt; i++) {
+        var dis = Math.min(100, xscale(50) / nodes_cnt);
 
-    var links = [
-      {source: 0, target: 1},
-      {source: 0, target: 2},
-      {source: 0, target: 3},
-      {source: 1, target: 2},
-      {source: 1, target: 3},
-      {source: 2, target: 3},
-      {source: 2, target: 4},
-      {source: 2, target: 5},
-      {source: 2, target: 6},
-      {source: 3, target: 4},
-      {source: 3, target: 5},
-      {source: 3, target: 6}];
+        var cal_x = function (dis) {
+          if (i < nodes_cnt / 2) {
+            return xscale(50) - dis * (nodes_cnt / 2 - i)
+          } else {
+            return xscale(50) + dis * (i - nodes_cnt / 2)
+          }
+        };
+
+        nodes.push({
+          x: cal_x(dis),
+          y: yscale(layer),
+          //label: "node " + i,
+          fixed: true
+        })
+      }
+
+      return nodes
+    }
+
+    var nodes = make_nodes(2, LAYER_5)
+      .concat(make_nodes(2, LAYER_4))
+      .concat(make_nodes(3, LAYER_3))
+      .concat(make_nodes(6, LAYER_2))
+      .concat(make_nodes(9, LAYER_1));
+
+    var links = [];
 
     var force = d3.layout.force()
       .size([width, height])
@@ -120,8 +101,8 @@
       .attr("class", "node");
 
     node.append("svg:circle")
-      .style("stroke-width", 5)
-      .attr("r", 20);
+      .style("stroke-width", 2)
+      .attr("r", 10);
 
     node.append("svg:text")
       .attr("class", "label")
