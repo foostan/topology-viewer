@@ -13,6 +13,10 @@
       stroke: #ccc;
     }
 
+    line.rule {
+      stroke: #eee;
+    }
+
     g.node circle {
       fill: #eee;
       stroke: #bbb;
@@ -26,73 +30,105 @@
 <body>
 <div id="topology">
   <script type="text/javascript" charset="utf-8">
-    var width = screen.width, width_2 = width / 2;
-    var height = screen.height, height_2 = height / 2;
+    var width = document.documentElement.clientWidth;
+    var height = document.documentElement.clientHeight;
+    var xscale = d3.scale.linear().domain([0, 100]).range([width / 4, width / 4 * 3]);
+    var yscale = d3.scale.linear().domain([0, 100]).range([height / 4, height / 4 * 3]);
+
+    const LAYER_5 = 0, LAYER_4 = 25, LAYER_3 = 50, LAYER_2 = 75, LAYER_1 = 0;
 
     var vis = d3.select("#topology")
-        .append("svg:svg")
-        .attr("width", width)
-        .attr("height", height);
+      .append("svg:svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    for (y = 0; y <= 100; y += 25) {
+      vis.append("line")
+        .attr("x1", xscale(0))
+        .attr("y1", yscale(y))
+        .attr("x2", xscale(100))
+        .attr("y2", yscale(y))
+        .attr("class", "rule");
+    }
 
     var nodes = [
       {
-        x: width_2 - 250,
-        y: height_2 - 150,
+        x: xscale(40),
+        y: yscale(LAYER_5),
         label: "node 1",
         fixed: true
       }, {
-        x: width_2,
-        y: height_2 - 300,
+        x: xscale(60),
+        y: yscale(LAYER_5),
         label: "node 2",
         fixed: true
       }, {
-        x: width_2 + 250,
-        y: height_2 - 150,
+        x: xscale(40),
+        y: yscale(LAYER_4),
         label: "node 3",
         fixed: true
       }, {
-        x: width_2 - 250,
-        y: height_2 + 150,
+        x: xscale(60),
+        y: yscale(LAYER_4),
         label: "node 4",
         fixed: true
       }, {
-        x: width_2 + 250,
-        y: height_2 + 150,
+        x: xscale(20),
+        y: yscale(LAYER_3),
         label: "node 5",
+        fixed: true
+      }, {
+        x: xscale(50),
+        y: yscale(LAYER_3),
+        label: "node 6",
+        fixed: true
+      }, {
+        x: xscale(80),
+        y: yscale(LAYER_3),
+        label: "node 7",
         fixed: true
       }];
 
     var links = [
       {source: 0, target: 1},
       {source: 0, target: 2},
+      {source: 0, target: 3},
+      {source: 1, target: 2},
       {source: 1, target: 3},
-      {source: 1, target: 4}];
+      {source: 2, target: 3},
+      {source: 2, target: 4},
+      {source: 2, target: 5},
+      {source: 2, target: 6},
+      {source: 3, target: 4},
+      {source: 3, target: 5},
+      {source: 3, target: 6}];
 
     var force = d3.layout.force()
-        .size([width, height])
-        .nodes(nodes)
-        .links(links)
-        .start();
+      .size([width, height])
+      .nodes(nodes)
+      .links(links)
+      .start();
 
     var link = vis.selectAll("line.link")
-        .data(links).enter()
-        .append("svg:line")
-        .attr("class", "link");
+      .data(links).enter()
+      .append("svg:line")
+      .attr("class", "link");
 
     var node = vis.selectAll("g.node")
-        .data(nodes).enter()
-        .append("svg:g")
-        .attr("class", "node");
+      .data(nodes).enter()
+      .append("svg:g")
+      .attr("class", "node");
 
     node.append("svg:circle")
-        .style("stroke-width", 5)
-        .attr("r", 20);
+      .style("stroke-width", 5)
+      .attr("r", 20);
 
     node.append("svg:text")
-        .attr("class", "label")
-        .text(function (d) {
-          return d.label;
-        });
+      .attr("class", "label")
+      .text(function (d) {
+        return d.label;
+      });
+
 
     var updateLink = function () {
       this.attr("x1", function (d) {
